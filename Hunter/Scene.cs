@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing.Drawing2D;
+using System.Numerics;
 
 namespace Hunter
 {
@@ -16,6 +17,15 @@ namespace Hunter
         private static Graphics _graphics;
         public static Control Field { get; private set; }
         public static bool IsAlive { get; private set; } = false;
+        public static Vector2 Cursor
+        {
+            get
+            {
+                Point p = new Point();
+                Field.Invoke(new Action(()=>p = Field.PointToClient(System.Windows.Forms.Cursor.Position)));
+                return new Vector2(p.X, p.Y);
+            }
+        }
 
         static Scene()
         {
@@ -35,6 +45,7 @@ namespace Hunter
             GameObject.Instantiate<FPS>();
             GameObject.Instantiate<Food>(100);
             GameObject.Instantiate(new Generator<Food>(20));
+            GameObject.Instantiate<Player>();
 
             Thread workerThread = new Thread(Worker);
             workerThread.IsBackground = true;
@@ -54,9 +65,12 @@ namespace Hunter
                     _graphics.CompositingQuality = CompositingQuality.HighQuality;
                     _graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     _graphics.Clear(_backgroundColor);
-                    foreach (var item in GameObjects.OrderBy(x => x.Value.Layer))
+                    lock (GameObjects)
                     {
-                        item.Value.Draw(_graphics);
+                        foreach (var item in GameObjects.OrderBy(x => x.Value.Layer))
+                        {
+                            item.Value.Draw(_graphics);
+                        }
                     }
                 }
                 Field.Invalidate();
@@ -66,9 +80,12 @@ namespace Hunter
         public void Start()
         {
             IsAlive = true;
-            foreach (var item in GameObjects)
+            lock (GameObjects)
             {
-                item.Value.Start();
+                foreach (var item in GameObjects)
+                {
+                    item.Value.Start();
+                }
             }
         }
         public void Stop()

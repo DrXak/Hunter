@@ -9,10 +9,8 @@ namespace Hunter
     /// </summary>
     class Food : Creature
     {
-        public Food() : base(0)
+        public Food() : base(0, 100)
         {
-            // Инициализируем площадь еды
-            Area = 100;
         }
         /// <summary>
         /// Рисовать еду
@@ -25,7 +23,7 @@ namespace Hunter
             // Угол между вершинами
             var angle = Math.PI * 2 / vertexes;
             // Координаты центра
-            var center = new PointF(X, Y);
+            var center = new PointF(Position.X, Position.Y);
             // Генерируем координаты вершин
             var points = Enumerable.Range(0, vertexes)
                   .Select(i => PointF.Add(center, new SizeF((float)Math.Sin(i * angle) * _radius, (float)Math.Cos(i * angle) * _radius)));

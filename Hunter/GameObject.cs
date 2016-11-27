@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Threading;
 using System;
+using System.Numerics;
 
 namespace Hunter
 {
@@ -12,7 +13,7 @@ namespace Hunter
         /// <summary>
         /// Координаты объекта
         /// </summary>
-        public float X = 0, Y = 0;
+        public Vector2 Position;
         /// <summary>
         /// Поток объекта
         /// </summary>
@@ -85,8 +86,11 @@ namespace Hunter
         public static bool Destroy(Guid guid)
         {
             GameObject tmp;
-            Scene.GameObjects[guid]?.Stop();
-            return Scene.GameObjects.TryRemove(guid, out tmp);
+            lock (Scene.GameObjects)
+            {
+                Scene.GameObjects[guid]?.Stop();
+                return Scene.GameObjects.TryRemove(guid, out tmp);
+            }
         }
         public static void Instantiate<T>(int count = 1)
             where T : GameObject, new()
@@ -94,13 +98,19 @@ namespace Hunter
             for (int i = 0; i < count; i++)
             {
                 T go = new T();
-                Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
+                lock (Scene.GameObjects)
+                {
+                    Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
+                }
                 go.Start();
             }
         }
         public static void Instantiate(GameObject go)
         {
-            Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
+            lock (Scene.GameObjects)
+            {
+                Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
+            }
             go.Start();
         }
     }
