@@ -194,7 +194,7 @@ namespace Hunter
                 if (IsSceneRunning)
                     Thread.Sleep(10);
             } while (IsSceneRunning);
-
+            // Сохраняем изменения
             SaveRecord();
             db.SaveChanges();
         }
