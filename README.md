@@ -1,7 +1,7 @@
 # Hunter
 Упрощённый клон agar.io
 
-Бинарники:<br />
+Скомпилированная версия:<br />
 https://www.dropbox.com/s/1x4hqdqjlo3ftaj/Hunter.zip?dl=0
 
 Для работы программы необходимо установить .NET Framework 4.6.1. Это можно сделать по ссылке:<br />
