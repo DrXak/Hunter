@@ -5,40 +5,23 @@ using System.Numerics;
 
 namespace Hunter
 {
-    /// <summary>
-    /// Игровой объект
-    /// </summary>
+    // Игровой объект
     class GameObject
     {
+        // Событие удаления игрового объекта
         public event EventHandler Destroing;
-        /// <summary>
-        /// Координаты объекта
-        /// </summary>
+        // Координаты объекта
         public Vector2 Position;
-        /// <summary>
-        /// Поток объекта
-        /// </summary>
+        // Поток объекта
         private Thread _thread;
-        /// <summary>
-        /// Текущее состояние потока
-        /// </summary>
-        private bool _isAlive;
-        /// <summary>
-        /// Слой объекта
-        /// </summary>
+        // Текущее состояние потока
+        private bool _isAlive = false;
+        // Слой на котором рисуется объект
         public virtual int Layer { get; protected set; } = 0;
-
-        public GameObject()
+        // Основная функция потока
+        private void Updater()
         {
-            // Инициализируем поток
-            _isAlive = false;
-        }
-        /// <summary>
-        /// Основная функция потока
-        /// </summary>
-        private void Worker()
-        {
-            // Бесконечный цикл пока поток живой
+            // Бесконечный цикл пока поток живой и сцена позволяет
             while (Scene.IsActing && _isAlive)
             {
                 // Блокируем доступ к объекту
@@ -51,73 +34,56 @@ namespace Hunter
                 Thread.Sleep(10);
             }
         }
-        /// <summary>
-        /// Функция обновления данных, служит для переопределения в дочерних классах
-        /// </summary>
+        // Функция обновления данных, служит для переопределения в дочерних классах
         protected virtual void Update()
         {
         }
-        /// <summary>
-        /// Запустить поток
-        /// </summary>
+        // Запустить поток
         public void Start()
         {
+            // Устанавливаем что поток живой
             _isAlive = true;
+            // Если поток уже закончил свою работу или ещё не начинал, то создаём новый
             if (_thread == null || !_thread.IsAlive)
             {
-                _thread = new Thread(Worker);
+                _thread = new Thread(Updater);
                 _thread.Start();
                 _thread.IsBackground = true;
             }
         }
-        /// <summary>
-        ///  Остановить поток
-        /// </summary>
+        //  Остановить поток
         public void Stop()
         {
             _isAlive = false;
         }
-        /// <summary>
-        /// Рисовать объект, служит для переопределения в дочерних классах
-        /// </summary>
-        /// <param name="g">Объект графики</param>
+        // Рисовать объект, служит для переопределения в дочерних классах
         public virtual void Draw(Graphics g)
         {
         }
-        public static bool Destroy(Guid guid)
+        // Удалить игровой объект
+        public static void Destroy(GameObject go)
         {
-            GameObject go;
-            lock (Scene.GameObjects)
+            // Проверяем что нам не передали пустышку
+            if (go != null)
             {
-                Scene.GameObjects.TryGetValue(guid, out go);
-                if (go != null)
-                {
-                    go.Stop();
-                    go.Destroing?.Invoke(go, EventArgs.Empty);
-                    Scene.GameObjects.TryRemove(guid, out go);
-                }
-                return go != null;
+                // Удаляем из списка
+                Scene.GameObjects.Remove(go);
+                // Останавливаем работу объекта
+                go.Stop();
+                // Вызываем событие удаления у объекта
+                go.Destroing?.Invoke(go, EventArgs.Empty);
             }
         }
-        public static void Instantiate<T>(int count = 1)
-            where T : GameObject, new()
-        {
-            for (int i = 0; i < count; i++)
-            {
-                T go = new T();
-                lock (Scene.GameObjects)
-                {
-                    Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
-                }
-                go.Start();
-            }
-        }
+        // Создать игровой объект
         public static void Instantiate(GameObject go)
         {
+            // Блокируем доступ к списку игровых объектов
             lock (Scene.GameObjects)
             {
-                Scene.GameObjects.TryAdd(Guid.NewGuid(), go);
+                // Добавляем новый объект к списку
+                Scene.GameObjects.Add(go);
             }
+            // Запускаем игровой объект
             go.Start();
         }
     }

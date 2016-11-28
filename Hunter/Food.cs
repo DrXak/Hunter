@@ -4,18 +4,14 @@ using System.Drawing;
 
 namespace Hunter
 {
-    /// <summary>
-    /// Еда
-    /// </summary>
+    // Еда
     class Food : Creature
     {
+        // Передаём в базовый конструктор скорость и площадь
         public Food() : base(0, 100)
         {
         }
-        /// <summary>
-        /// Рисовать еду
-        /// </summary>
-        /// <param name="g">Объект графики</param>
+        // Рисовать еду
         public override void Draw(Graphics g)
         {
             // Количество вершин

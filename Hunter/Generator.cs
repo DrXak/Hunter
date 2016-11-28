@@ -1,35 +1,26 @@
 ﻿namespace Hunter
 {
-    /// <summary>
-    /// Генератор объектов
-    /// </summary>
-    /// <typeparam name="T">Тип игрового объекта для генерации</typeparam>
+    // Генератор объектов
     class Generator<T> : GameObject
         where T : GameObject, new()
     {
-        /// <summary>
-        /// Скорость генерации
-        /// </summary>
+        // Скорость генерации
         private int _generateSpeed;
-        /// <summary>
-        /// Счётчик
-        /// </summary>
+        // Счётчик
         private int _counter;
-
+        // Инициализируем в конструкторе скорость генерации
         public Generator(int generatorSpeed)
         {
             _generateSpeed = generatorSpeed;
         }
-        /// <summary>
-        /// Считаем счётчик и генерируем
-        /// </summary>
+        // Считаем счётчик и генерируем
         protected override void Update()
         {
             _counter++;
             if (_counter >= _generateSpeed)
             {
                 _counter = 0;
-                Instantiate<T>();
+                Instantiate(new T());
             }
         }
     }

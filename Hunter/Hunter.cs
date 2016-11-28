@@ -1,32 +1,25 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
+using System.Linq;
 
 namespace Hunter
 {
-    /// <summary>
-    /// Хищник
-    /// </summary>
+    // Хищник
     class Hunter : Creature
     {
-        /// <summary>
-        /// Изменение массы
-        /// </summary>
+        // Изменение массы
         private const float _areaChange = 0.9996f;
+        // Передаём в базовый конструктор скорость и площадь
         public Hunter() : base(1, 300)
         {
         }
-        /// <summary>
-        /// Рисовать хищника
-        /// </summary>
-        /// <param name="g">Объект графики</param>
+        // Рисовать хищника
         public override void Draw(Graphics g)
         {
             g.FillEllipse(Brush, Position.X - _radius, Position.Y - _radius, _radius * 2, _radius * 2);
         }
-        /// <summary>
-        /// Обновить данные хищника
-        /// </summary>
+        // Обновить данные хищника
         protected override void Update()
         {
             // Уменьшаем площадь
@@ -38,18 +31,19 @@ namespace Hunter
                 _direction.Y = -_direction.Y;
             // Двигаем хищника по направлению скорости движения
             Position += _direction * _speed;
-            // Съедаем что можно
-            foreach (var item in Scene.GameObjects)
+            // Блокируем список игровых объектов
+            lock (Scene.GameObjects)
             {
-                // Отбираем только существ
-                Creature go = item.Value as Creature;
-                // Если существо достаточно близко то съедаем
-                if (go != null && go != this && Area > go.Area && Vector2.Distance(Position, go.Position) < _radius)
+                // Создаём список объектов которые можно съесть
+                var destroyList = Scene.GameObjects
+                    .OfType<Creature>()
+                    .Where(x => x != this && Area > x.Area && Vector2.Distance(Position, x.Position) < _radius)
+                    .ToList();
+                // Удаляем их с игры и увеличиваем собственную площадь
+                foreach (var item in destroyList)
                 {
-                    if (Destroy(item.Key))
-                    {
-                        Area += go.Area;
-                    }
+                    Area += item.Area;
+                    Destroy(item);
                 }
             }
         }
