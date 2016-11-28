@@ -8,4 +8,4 @@ https://www.dropbox.com/s/1x4hqdqjlo3ftaj/Hunter.zip?dl=0
 https://www.microsoft.com/ru-ru/download/details.aspx?id=49982
 
 Превью:<br />
-https://github.com/DrXak/Hunter/blob/master/Preview.JPG
+![alt Preview](https://raw.githubusercontent.com/DrXak/Hunter/master/Preview.JPG)
