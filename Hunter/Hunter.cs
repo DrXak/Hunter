@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Numerics;
 
 namespace Hunter
 {
@@ -21,7 +22,7 @@ namespace Hunter
         /// <param name="g">Объект графики</param>
         public override void Draw(Graphics g)
         {
-            g.FillEllipse(_brush, Position.X - _radius, Position.Y - _radius, _radius * 2, _radius * 2);
+            g.FillEllipse(Brush, Position.X - _radius, Position.Y - _radius, _radius * 2, _radius * 2);
         }
         /// <summary>
         /// Обновить данные хищника
@@ -43,8 +44,7 @@ namespace Hunter
                 // Отбираем только существ
                 Creature go = item.Value as Creature;
                 // Если существо достаточно близко то съедаем
-                if (go != null && go != this && Area > go.Area
-                    && Math.Sqrt(Math.Pow(go.Position.X - Position.X, 2) + Math.Pow(go.Position.Y - Position.Y, 2)) < _radius)
+                if (go != null && go != this && Area > go.Area && Vector2.Distance(Position, go.Position) < _radius)
                 {
                     if (Destroy(item.Key))
                     {

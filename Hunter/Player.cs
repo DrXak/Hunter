@@ -12,14 +12,16 @@ namespace Hunter
 {
     class Player : Hunter
     {
+        public float Record { get; private set; } = 0;
         public Player()
         {
-            _brush = new SolidBrush(Color.White);
+            Brush = new SolidBrush(Color.White);
         }
         protected override void Update()
         {
             _direction = Vector2.Normalize(Scene.Cursor - Position);
             base.Update();
+            Record = Math.Max(_radius, Record);
         }
     }
 }

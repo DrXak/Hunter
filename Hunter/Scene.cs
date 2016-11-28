@@ -11,12 +11,15 @@ namespace Hunter
 {
     class Scene
     {
-        public static readonly ConcurrentDictionary<Guid, GameObject> GameObjects;
-        private static readonly Color _backgroundColor;
-        private static Bitmap _buffer;
-        private static Graphics _graphics;
+        public static ConcurrentDictionary<Guid, GameObject> GameObjects;
+        public Color BackgroundColor;
+        private Bitmap _buffer;
+        private Graphics _graphics;
+        private Thread workerThread;
         public static Control Field { get; private set; }
-        public static bool IsAlive { get; private set; } = false;
+        public static bool IsActing { get; private set; } = false;
+        public static bool IsDrawing { get; private set; } = true;
+        public Player Player { get; private set; }
         public static Vector2 Cursor
         {
             get
@@ -26,14 +29,10 @@ namespace Hunter
                 return new Vector2(p.X, p.Y);
             }
         }
-
-        static Scene()
-        {
-            GameObjects = new ConcurrentDictionary<Guid, GameObject>();
-            _backgroundColor = Color.Black;
-        }
         public Scene(Control control)
         {
+            GameObjects = new ConcurrentDictionary<Guid, GameObject>();
+            BackgroundColor = Color.Black;
             Field = control;
             _buffer = new Bitmap(Field.Width, Field.Height);
             _graphics = Graphics.FromImage(_buffer);
@@ -42,15 +41,19 @@ namespace Hunter
 
             GameObject.Instantiate<Hunter>(10);
             GameObject.Instantiate(new Generator<Hunter>(100));
-            GameObject.Instantiate<FPS>();
             GameObject.Instantiate<Food>(100);
             GameObject.Instantiate(new Generator<Food>(20));
-            GameObject.Instantiate<Player>();
+            Player = new Player();
+            Player.Destroing += Player_Destroing;
+            GameObject.Instantiate(Player);
 
-            Thread workerThread = new Thread(Worker);
-            workerThread.IsBackground = true;
-            workerThread.Start();
-            Start();
+            StartDrawing();
+            StartActing();
+        }
+        private void Player_Destroing(object sender, EventArgs e)
+        {
+            StopActing();
+            GameObject.Instantiate<EndGameLabel>();
         }
         private void OnPaint(object sender, PaintEventArgs e)
         {
@@ -58,13 +61,13 @@ namespace Hunter
         }
         private void Worker()
         {
-            while (true)
+            while (IsDrawing)
             {
                 lock (_buffer)
                 {
                     _graphics.CompositingQuality = CompositingQuality.HighQuality;
                     _graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    _graphics.Clear(_backgroundColor);
+                    _graphics.Clear(BackgroundColor);
                     lock (GameObjects)
                     {
                         foreach (var item in GameObjects.OrderBy(x => x.Value.Layer))
@@ -77,9 +80,16 @@ namespace Hunter
                 Thread.Sleep(12);
             }
         }
-        public void Start()
+        private void StartDrawing()
         {
-            IsAlive = true;
+            IsDrawing = true;
+            workerThread = new Thread(Worker);
+            workerThread.IsBackground = true;
+            workerThread.Start();
+        }
+        public void StartActing()
+        {
+            IsActing = true;
             lock (GameObjects)
             {
                 foreach (var item in GameObjects)
@@ -88,9 +98,13 @@ namespace Hunter
                 }
             }
         }
-        public void Stop()
+        public void StopActing()
         {
-            IsAlive = false;
+            IsActing = false;
+        }
+        public void StopDrawing()
+        {
+            IsDrawing = false;
         }
     }
 }

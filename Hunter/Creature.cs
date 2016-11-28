@@ -17,7 +17,7 @@ namespace Hunter
         /// <summary>
         /// Цвет существа
         /// </summary>
-        protected SolidBrush _brush;
+        public SolidBrush Brush;
         /// <summary>
         /// Направление движения
         /// </summary>
@@ -58,7 +58,7 @@ namespace Hunter
             float angle = (float)(Utility.Random.NextDouble() * 2 * Math.PI);
             _direction = Vector2.Transform(Vector2.UnitX, Matrix3x2.CreateRotation(angle));
             //Инициализируем цвет
-            _brush = new SolidBrush(Color.FromArgb(Utility.Random.Next(255), Utility.Random.Next(255), Utility.Random.Next(255)));
+            Brush = new SolidBrush(Color.FromArgb(Utility.Random.Next(255), Utility.Random.Next(255), Utility.Random.Next(255)));
         }
     }
 }

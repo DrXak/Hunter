@@ -28,7 +28,7 @@ namespace Hunter
             var points = Enumerable.Range(0, vertexes)
                   .Select(i => PointF.Add(center, new SizeF((float)Math.Sin(i * angle) * _radius, (float)Math.Cos(i * angle) * _radius)));
             // Рисуем полигон по вершинам
-            g.FillPolygon(_brush, points.ToArray());
+            g.FillPolygon(Brush, points.ToArray());
         }
     }
 }

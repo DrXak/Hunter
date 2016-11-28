@@ -10,6 +10,7 @@ namespace Hunter
     /// </summary>
     class GameObject
     {
+        public event EventHandler Destroing;
         /// <summary>
         /// Координаты объекта
         /// </summary>
@@ -38,7 +39,7 @@ namespace Hunter
         private void Worker()
         {
             // Бесконечный цикл пока поток живой
-            while (Scene.IsAlive && _isAlive)
+            while (Scene.IsActing && _isAlive)
             {
                 // Блокируем доступ к объекту
                 lock (this)
@@ -65,9 +66,9 @@ namespace Hunter
             if (_thread == null || !_thread.IsAlive)
             {
                 _thread = new Thread(Worker);
+                _thread.Start();
                 _thread.IsBackground = true;
             }
-            _thread.Start();
         }
         /// <summary>
         ///  Остановить поток
@@ -85,11 +86,17 @@ namespace Hunter
         }
         public static bool Destroy(Guid guid)
         {
-            GameObject tmp;
+            GameObject go;
             lock (Scene.GameObjects)
             {
-                Scene.GameObjects[guid]?.Stop();
-                return Scene.GameObjects.TryRemove(guid, out tmp);
+                Scene.GameObjects.TryGetValue(guid, out go);
+                if (go != null)
+                {
+                    go.Stop();
+                    go.Destroing?.Invoke(go, EventArgs.Empty);
+                    Scene.GameObjects.TryRemove(guid, out go);
+                }
+                return go != null;
             }
         }
         public static void Instantiate<T>(int count = 1)
