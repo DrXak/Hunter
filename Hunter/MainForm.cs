@@ -48,6 +48,14 @@ namespace Hunter
         // Инициализируем дополнительные данные при загрузке окна
         private void MainForm_Load(object sender, EventArgs e)
         {
+            // Загружаем базу данных
+            LoadDataBase();
+            // Перезапускаем сцену
+            RestartScene();
+        }
+        // Загрузить базу данных
+        private void LoadDataBase()
+        {
             // Создаём объект базы данных
             db = new DataEntities();
             // Загружаем всех пользователей
@@ -55,8 +63,6 @@ namespace Hunter
             {
                 ChooseMenuItem.DropDownItems.Add(item.Name, null, StripItem_Click);
             }
-            // Перезапускаем сцену
-            RestartScene();
         }
         // Перезапустить сцену
         private void RestartScene()
@@ -82,6 +88,7 @@ namespace Hunter
         // Загрузить данные игрока
         private void LoadUser()
         {
+            Text = "Хищник - " + db.User.First(x => x.Id == _userId).Name;
             _currentBackgroundColor = _userBackgroundColor;
             _currentHunterColor = _userHunterColor;
         }
@@ -141,9 +148,16 @@ namespace Hunter
             string name = Interaction.InputBox("Введите новое имя пользователя", "Создать");
             if (name != "")
             {
-                _userId = db.User.Add(new User { Name = name }).Id;
+                var user = new User
+                {
+                    Name = name,
+                    BackgroundColor = Color.Black.ToArgb(),
+                    HunterColor = Color.White.ToArgb()
+                };
+                db.User.Add(user);
                 db.SaveChanges();
-                ChooseMenuItem.DropDownItems.Add(name, null, StripItem_Click);
+                _userId = user.Id;
+                LoadDataBase();
                 LoadUser();
             }
         }
