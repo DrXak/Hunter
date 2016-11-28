@@ -13,7 +13,7 @@ namespace Hunter
         // Координаты объекта
         public Vector2 Position;
         // Поток объекта
-        private Thread _thread;
+        public Thread Thread;
         // Текущее состояние потока
         private bool _isAlive = false;
         // Слой на котором рисуется объект
@@ -44,11 +44,11 @@ namespace Hunter
             // Устанавливаем что поток живой
             _isAlive = true;
             // Если поток уже закончил свою работу или ещё не начинал, то создаём новый
-            if (_thread == null || !_thread.IsAlive)
+            if (Thread == null || !Thread.IsAlive)
             {
-                _thread = new Thread(Updater);
-                _thread.Start();
-                _thread.IsBackground = true;
+                Thread = new Thread(Updater);
+                Thread.Start();
+                //_thread.IsBackground = true;
             }
         }
         //  Остановить поток

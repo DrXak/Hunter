@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualBasic;
 
 namespace Hunter
@@ -166,8 +167,30 @@ namespace Hunter
         // Сохраняем данные при выходе
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            _scene.StopActing();
+            _scene.StopDrawing();
+            // Ждём пока не остановятся все потоки
+            bool IsSceneRunning;
+            do
+            {
+                lock (Scene.GameObjects)
+                {
+                    IsSceneRunning = Scene.GameObjects.Any(x => x.Thread.IsAlive);
+                }
+                if (IsSceneRunning)
+                    Thread.Sleep(10);
+            } while (IsSceneRunning);
+
             SaveRecord();
             db.SaveChanges();
+        }
+        // Обновление положения курсора в сцене
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_scene != null)
+            {
+                Scene.Cursor = new System.Numerics.Vector2(e.Location.X, e.Location.Y);
+            }
         }
     }
 }

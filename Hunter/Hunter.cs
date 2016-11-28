@@ -23,7 +23,8 @@ namespace Hunter
         protected override void Update()
         {
             // Уменьшаем площадь
-            Area *= _areaChange;
+            if (Area > 150)
+                Area *= _areaChange;
             // Проверяем не вышел ли хищник за пределы поля
             if (Position.X + _radius > Scene.Field.Width && _direction.X > 0 || Position.X - _radius < 0 && _direction.X < 0)
                 _direction.X = -_direction.X;

@@ -31,15 +31,7 @@ namespace Hunter
         // Игровой объект игрока
         public Player Player { get; private set; }
         // Координаты курсора
-        public static Vector2 Cursor
-        {
-            get
-            {
-                Point p = new Point();
-                Field.Invoke(new Action(()=>p = Field.PointToClient(System.Windows.Forms.Cursor.Position)));
-                return new Vector2(p.X, p.Y);
-            }
-        }
+        public static Vector2 Cursor;
         // Конструктор
         public Scene(Control control)
         {
