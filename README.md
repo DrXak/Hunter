@@ -9,3 +9,6 @@ https://www.microsoft.com/ru-ru/download/details.aspx?id=49982
 
 Превью:<br />
 ![alt Preview](https://raw.githubusercontent.com/DrXak/Hunter/master/Preview.JPG)
+
+Описание игры:<br />
+https://github.com/DrXak/Hunter/wiki
