@@ -31,7 +31,7 @@ namespace Hunter
                     Update();
                 }
                 // И ждём следующего раза
-                Thread.Sleep(10);
+                Thread.Sleep(Scene.ActionWaitTime);
             }
         }
         // Функция обновления данных, служит для переопределения в дочерних классах
@@ -66,8 +66,12 @@ namespace Hunter
             // Проверяем что нам не передали пустышку
             if (go != null)
             {
+                // Запрашиваем доступ на запись
+                Scene.Lock.AcquireWriterLock(-1);
                 // Удаляем из списка
                 Scene.GameObjects.Remove(go);
+                // Возвращаем доступ
+                Scene.Lock.ReleaseWriterLock();
                 // Останавливаем работу объекта
                 go.Stop();
                 // Вызываем событие удаления у объекта
@@ -78,11 +82,11 @@ namespace Hunter
         public static void Instantiate(GameObject go)
         {
             // Блокируем доступ к списку игровых объектов
-            lock (Scene.GameObjects)
-            {
-                // Добавляем новый объект к списку
-                Scene.GameObjects.Add(go);
-            }
+            Scene.Lock.AcquireWriterLock(-1);
+            // Добавляем новый объект к списку
+            Scene.GameObjects.Add(go);
+            // Возвращаем доступ
+            Scene.Lock.ReleaseWriterLock();
             // Запускаем игровой объект
             go.Start();
         }

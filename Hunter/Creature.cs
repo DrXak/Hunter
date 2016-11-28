@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Numerics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hunter
 {
@@ -29,7 +24,7 @@ namespace Hunter
         /// <summary>
         /// Радиус существа
         /// </summary>
-        protected float _radius
+        public float Radius
         {
             get { return (float)Math.Sqrt(Area / Math.PI); }
         }
@@ -42,7 +37,7 @@ namespace Hunter
         /// </summary>
         public override int Layer
         {
-            get { return (int)_radius; }
+            get { return (int)Radius; }
             protected set {}
         }
         public Creature(float speed, float area)
@@ -52,8 +47,8 @@ namespace Hunter
             // Инициализируем площадь
             Area = area;
             // Инициализируем координаты случайным образом в пределах поля
-            Position.X = Utility.Random.Next((int)_radius, Scene.Field.Width - (int)_radius);
-            Position.Y = Utility.Random.Next((int)_radius, Scene.Field.Height - (int)_radius);
+            Position.X = Utility.Random.Next((int)Radius, Scene.Field.Width - (int)Radius);
+            Position.Y = Utility.Random.Next((int)Radius, Scene.Field.Height - (int)Radius);
             // Инициализируем направление движения
             float angle = (float)(Utility.Random.NextDouble() * 2 * Math.PI);
             _direction = Vector2.Transform(Vector2.UnitX, Matrix3x2.CreateRotation(angle));

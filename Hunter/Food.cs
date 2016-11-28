@@ -22,7 +22,7 @@ namespace Hunter
             var center = new PointF(Position.X, Position.Y);
             // Генерируем координаты вершин
             var points = Enumerable.Range(0, vertexes)
-                  .Select(i => PointF.Add(center, new SizeF((float)Math.Sin(i * angle) * _radius, (float)Math.Cos(i * angle) * _radius)));
+                  .Select(i => PointF.Add(center, new SizeF((float)Math.Sin(i * angle) * Radius, (float)Math.Cos(i * angle) * Radius)));
             // Рисуем полигон по вершинам
             g.FillPolygon(Brush, points.ToArray());
         }

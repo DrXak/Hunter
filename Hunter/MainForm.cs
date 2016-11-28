@@ -67,6 +67,8 @@ namespace Hunter
         // Перезапустить сцену
         private void RestartScene()
         {
+            // Останавливаем FPS индикатор
+            fpsTimer.Enabled = false;
             // Если сцена уже создана то останавливаем её
             if (_scene != null)
             {
@@ -79,6 +81,8 @@ namespace Hunter
             _scene.Player.Destroing += Player_Destroing;
             // Загружаем данные игрока
             LoadUser();
+            // Запускаем FPS индикатор
+            fpsTimer.Enabled = true;
         }
         // Сохраняем рекорд при смерти игрока
         private void Player_Destroing(object sender, EventArgs e)
@@ -187,10 +191,10 @@ namespace Hunter
             bool IsSceneRunning;
             do
             {
-                lock (Scene.GameObjects)
-                {
-                    IsSceneRunning = Scene.GameObjects.Any(x => x.Thread.IsAlive);
-                }
+                Scene.Lock.AcquireReaderLock(-1);
+                IsSceneRunning = Scene.GameObjects.Any(x => x.Thread.IsAlive);
+                Scene.Lock.ReleaseReaderLock();
+
                 if (IsSceneRunning)
                     Thread.Sleep(10);
             } while (IsSceneRunning);
@@ -205,6 +209,13 @@ namespace Hunter
             {
                 Scene.Cursor = new System.Numerics.Vector2(e.Location.X, e.Location.Y);
             }
+        }
+        // Обновляем FPS
+        private void fpsTimer_Tick(object sender, EventArgs e)
+        {
+            fpsLabel.Text = string.Format("Action Per Second: {0}; Draw Per Second {1}",
+                _scene.FPS.APS.LastFrameRate,
+                _scene.FPS.DPS.LastFrameRate);
         }
     }
 }

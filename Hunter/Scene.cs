@@ -13,7 +13,9 @@ namespace Hunter
     class Scene
     {
         // Список игровых объектов
-        public static List<GameObject> GameObjects;
+        public static List<GameObject> GameObjects { get; set; }
+        // Блокировщик ресурса
+        public static ReaderWriterLock Lock { get; private set; } = new ReaderWriterLock();
         // Цвет фона
         public Color BackgroundColor;
         // Буфер рисования
@@ -29,9 +31,14 @@ namespace Hunter
         // Индикатор рисования
         public static bool IsDrawing { get; private set; } = true;
         // Игровой объект игрока
-        public Player Player { get; private set; }
+        public PlayerHunter Player { get; private set; }
+        // FPS
+        public FPS FPS { get; private set; }
         // Координаты курсора
         public static Vector2 Cursor;
+        // Задержка между кадрами
+        public static int DrawWaitTime = 12;
+        public static int ActionWaitTime = 12;
         // Конструктор
         public Scene(Control control)
         {
@@ -41,18 +48,20 @@ namespace Hunter
             Field = control;
             _buffer = new Bitmap(Field.Width, Field.Height);
             _graphics = Graphics.FromImage(_buffer);
-            // Берём на себя перерисовку
-            Field.Paint += OnPaint;
+
             // Создаём игровые объекты
             for (int i = 0; i < 10; i++)
-                GameObject.Instantiate(new Hunter());
-            GameObject.Instantiate(new Generator<Hunter>(100));
+                GameObject.Instantiate(new BotHunter());
+            GameObject.Instantiate(new Generator<BotHunter>(10));
             for (int i = 0; i < 100; i++)
                 GameObject.Instantiate(new Food());
-            GameObject.Instantiate(new Generator<Food>(20));
-            Player = new Player();
+            GameObject.Instantiate(new Generator<Food>(1));
+            Player = new PlayerHunter();
             Player.Destroing += Player_Destroing;
             GameObject.Instantiate(Player);
+            FPS = new FPS();
+            GameObject.Instantiate(FPS);
+
             // Запускаем сцену
             StartDrawing();
             StartActing();
@@ -68,7 +77,10 @@ namespace Hunter
         // Вывести буфер рисования в окно
         private void OnPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawImageUnscaled(_buffer, Point.Empty);
+            lock (_buffer)
+            {
+                e.Graphics.DrawImageUnscaled(_buffer, Point.Empty);
+            }
         }
         // Функция рисования
         private void Drawer()
@@ -76,31 +88,35 @@ namespace Hunter
             // Продолжаем пока разрешено рисовать
             while (IsDrawing)
             {
-                // Устанавливаем высокое разрешение
-                _graphics.CompositingQuality = CompositingQuality.HighQuality;
-                // Устанавливаем высокое качество линий
-                _graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                // Очищаем экран
-                _graphics.Clear(BackgroundColor);
-                // Блокируем доступ к списку игровых объектов
-                lock (GameObjects)
+                lock (_buffer)
                 {
+                    // Устанавливаем высокое разрешение
+                    _graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    // Устанавливаем высокое качество линий
+                    _graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    // Очищаем экран
+                    _graphics.Clear(BackgroundColor);
+                    // Блокируем доступ к списку игровых объектов
+                    Lock.AcquireReaderLock(-1);
                     // Проходимся по игровым объектам в порядке возрастания слоя рисования
                     foreach (var item in GameObjects.OrderBy(x => x.Layer))
                     {
                         // Рисуем объект
                         item.Draw(_graphics);
                     }
+                    Lock.ReleaseReaderLock();
                 }
                 // Информируем что можно выводить нарисованное
                 Field.Invalidate();
                 // Ждём следующего раза
-                Thread.Sleep(12);
+                Thread.Sleep(DrawWaitTime);
             }
         }
         // Начать рисование
         private void StartDrawing()
         {
+            // Берём ответственность за отрисовку на себя
+            Field.Paint += OnPaint;
             // Устанавливаем индикатор рисования
             IsDrawing = true;
             // Создаём поток рисования
@@ -108,6 +124,7 @@ namespace Hunter
             // Устанавливаем фоновый режим потока
             // Это чтобы потоки закрылись при закрытии основного потока
             drawingThread.IsBackground = true;
+            drawingThread.Name = "scene";
             // Запускаем поток
             drawingThread.Start();
         }
@@ -117,14 +134,13 @@ namespace Hunter
             // Устанавливаем индикатор действий
             IsActing = true;
             // Блокируем список игровых объектов
-            lock (GameObjects)
+            Lock.AcquireReaderLock(-1);
+            // Запускаем все
+            foreach (var item in GameObjects)
             {
-                // Запускаем все
-                foreach (var item in GameObjects)
-                {
-                    item.Start();
-                }
+                item.Start();
             }
+            Lock.ReleaseReaderLock();
         }
         // Остановить действия
         public void StopActing()
@@ -135,6 +151,7 @@ namespace Hunter
         public void StopDrawing()
         {
             IsDrawing = false;
+            Field.Paint -= OnPaint;
         }
     }
 }
