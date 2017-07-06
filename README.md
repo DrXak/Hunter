@@ -1,6 +1,6 @@
 # Hunter
-Упрощённый клон agar.io
-(Имеются баги)
+Упрощённый клон agar.io<br />
+(Имеются баги. Неэффективная реализация.)
 
 Скомпилированная версия:<br />
 https://github.com/DrXak/Hunter/releases/download/v1.0/Hunter-v1.0.zip
