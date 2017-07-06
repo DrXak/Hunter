@@ -32,7 +32,7 @@ namespace Hunter
             // Обновить дополнительные данные хищника
             UpdateHunter();
             // Корректируем скорость
-            _speed = (float)Math.Exp(-Math.Abs(Radius - _minRadius) / 50) * 1.4f;
+            _speed = (float)Math.Exp(-Math.Abs(Radius - _minRadius) / 200) * 1.7f;
             // Уменьшаем площадь
             if (Area > _minArea)
                 Area *= _areaChange;
